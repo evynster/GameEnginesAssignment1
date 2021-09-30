@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 [RequireComponent(typeof(CharacterController))]
 public class PlayerController : MonoBehaviour
@@ -12,6 +13,12 @@ public class PlayerController : MonoBehaviour
      */
     public bool menu = false;
     private float menuTimer = 0f;
+
+    /*
+     * UI Elements data
+     */
+    [SerializeField]
+    private Text hintText;
 
     /*
      * Player movement stuff is here
@@ -275,17 +282,37 @@ public class PlayerController : MonoBehaviour
         {
             if (Physics.Raycast(cameraTransform.position, cameraTransform.forward, out RaycastHit hitInfo, 2f))
             {
+                switch (hitInfo.collider.gameObject.name)
+                {
+                    case "End":
+                        hintText.text = "Press Space\nto scale wall";
+                        break;
+                    case "LadderClimber":
+                        hintText.text = "Press Space\nto climb ladder";
+                        break;
+                    case "ZiplineStart":
+                        hintText.text = "Press F\nto zipline";
+                        break;
+                    case "Goal":
+                        hintText.text = "Press F\nto win?";
+                        break;
+                    default:
+                        hintText.text = "";
+                        break;
+                }
                 //Debug.Log(hitInfo.collider.gameObject.name);
                 if(inputManager.PlayerJumpedThisFrame())
                     if (hitInfo.collider.gameObject.name == ("End") && canScale)
                     {
                         SpecialMovement = true;
+                        hintText.text = "";
                         StartCoroutine(ScalingWall(ScaleWallObject, ScallWallEndObject));
                     }
                     else if (hitInfo.collider.gameObject.name == ("LadderClimber") && canClimb)
                     {
                         isClimbing = true;
                         SpecialMovement = true;
+                        hintText.text = "";
                         StartCoroutine(ClimbingLadder(ladderBox));
                     }
                 if (inputManager.PlayerInteractThisFrame())
@@ -294,6 +321,7 @@ public class PlayerController : MonoBehaviour
                     {
                         isZipping = true;
                         SpecialMovement = true;
+                        hintText.text = "";
                         zipStart = hitInfo.collider.gameObject;
                         zipEnd = zipStart.GetComponent<Zipline>().zipEnd;
                         StartCoroutine(Zipline(zipStart,zipEnd));
@@ -306,7 +334,9 @@ public class PlayerController : MonoBehaviour
                 }
                 
             }
-        }
+            else
+                hintText.text = "";
+        }            
     }
 
     public void ScaleWall(GameObject Wall, GameObject Ending)
