@@ -115,13 +115,16 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        menuCheck();
+        menuCheck();//menu is always checked ahead of movement
         if (!menu)
             movement();
         else
             menuFunction();
     }
 
+    /*
+     * this function checks to see of we have tried to pause the game while also stopping us from holding the pause key to pause and unpause all the time
+     */
     private void menuCheck()
     {
         if (menuTimer>=0f)
@@ -138,8 +141,11 @@ public class PlayerController : MonoBehaviour
     }
     private void menuFunction()
     {
-
+        //currently nothing for the menu besides a button
     }
+    /*
+     * This function handles player movement. Basic movement is put on hold while coroutines handle the special movements
+     */
     private void movement()
     {
         if (!SpecialMovement)
@@ -158,6 +164,7 @@ public class PlayerController : MonoBehaviour
             cameraMove = cameraMove.normalized;
             move = cameraMove * move.z + cameraTransform.right * move.x;
             move.y = 0f;
+            //this is checking how fast the player can move, it stops the player from starting a sprint mid air, etc
             if (isGrounded)
             {
                 if (isCrouching)
@@ -191,7 +198,7 @@ public class PlayerController : MonoBehaviour
                 playerVelocity.y += Mathf.Sqrt(-jumpHeight * gravityValue);
                 gameObject.GetComponent<CharacterController>().stepOffset = 0.001f;
             }
-            if (playerAffectedByGravity)
+            if (playerAffectedByGravity)//if we can fall this functions handles that and also limits are downwards velocity
             {
                 playerVelocity.y += currentGravityValue * Time.deltaTime;
                 if (playerVelocity.y < -10f)
@@ -211,6 +218,9 @@ public class PlayerController : MonoBehaviour
         }
     }
     
+    /*
+     * this function handles mouse movement and also smooths out the speed of the movement
+     */
     private void UpdateMouse()
     {
         Vector2 targetMouseDelta = inputManager.GetMouseDelta();
@@ -228,6 +238,9 @@ public class PlayerController : MonoBehaviour
         transform.Rotate(Vector3.up * currentMouseDelta.x * actualMouseSensitivity);
     }
 
+    /*
+     * This function handles crouching and such, it stops you from uncrouching and sticking your head into a ceiling
+     */
     private void Crouching()
     {
         if (!isCrouching && inputManager.PlayerCrouching())
@@ -238,7 +251,7 @@ public class PlayerController : MonoBehaviour
         else if (isCrouching && !inputManager.PlayerCrouching()) 
         {
             Ray crouchChecker = new Ray(transform.position,Vector3.up);
-
+            //TODO change to cylinder up check instead of raycast they aren't cheap
             if (!Physics.Raycast(crouchChecker, out RaycastHit hitInfo, 2f, LayerMask.GetMask("Ground")))
             {
                 isCrouching = false;
@@ -282,7 +295,7 @@ public class PlayerController : MonoBehaviour
         {
             if (Physics.Raycast(cameraTransform.position, cameraTransform.forward, out RaycastHit hitInfo, 2f))
             {
-                switch (hitInfo.collider.gameObject.name)
+                switch (hitInfo.collider.gameObject.name)//this is the hint text
                 {
                     case "End":
                         hintText.text = "Press Space\nto scale wall";
@@ -392,8 +405,13 @@ public class PlayerController : MonoBehaviour
         ladderObject = null;
         isClimbing = false;
     }
+    /*
+     * a seperate mouse function that limits the direction we can turn around based on the ladders direction
+     */
     private void UpdateClimbingMouse()
     {
+        if (!isClimbing)
+            return;
         Vector3 ladderDirection = ladderBox.transform.position - ladderObject.transform.position;
         ladderDirection.y = 0f;
         ladderDirection.Normalize();
@@ -432,7 +450,7 @@ public class PlayerController : MonoBehaviour
         yield return null;
         while (isClimbing)
         {
-            yield return null;//continue
+            yield return null;
             if (menu)
                 continue;
             if (inputManager.PlayerJumpedThisFrame())
@@ -462,7 +480,7 @@ public class PlayerController : MonoBehaviour
         isZipping = true;
         while (zipLinePercentage<1f)
         {
-            yield return null;//continue
+            yield return null;
             if (menu)
                 continue;
             zipLinePercentage += Time.deltaTime * zipLineSpeed;

@@ -34,7 +34,7 @@ public class LadderClimb : MonoBehaviour
         PlayerController player = other.gameObject.GetComponent<PlayerController>();
         if (player != null)
         {
-            player.UnClimbLadder(); ;
+            player.UnClimbLadder();
         }
     }
 }
